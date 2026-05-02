@@ -44,7 +44,8 @@ public class StudentService {
     }
 
     public StudentResponse getStudentById(Long id) {
-        Student student = repo.findById(id).orElse(null);
+        Student student = repo.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException(id));;
 
         if (student == null) {
             return null;
