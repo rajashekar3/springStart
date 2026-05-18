@@ -11,11 +11,20 @@ public class Student {
 
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     public Student() {
     }
 
     public Student(String name) {
         this.name = name;
+    }
+
+    public Student(String name, Course course) {
+        this.name = name;
+        this.course = course;
     }
 
     public Long getId() {
@@ -26,11 +35,19 @@ public class Student {
         return name;
     }
 
+    public Course getCourse() {
+        return course;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
     }
 }
