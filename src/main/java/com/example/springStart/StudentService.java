@@ -1,57 +1,75 @@
 package com.example.springStart;
 
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class StudentService {
 
     private final StudentRepository repo;
+    private final CourseRepository courseRepository;
 
-    public StudentService(StudentRepository repo) {
+    public StudentService(StudentRepository repo, CourseRepository courseRepository) {
         this.repo = repo;
+        this.courseRepository = courseRepository;
     }
 
     public StudentResponse saveStudent(StudentRequest request) {
 
         String cleanName = request.getName().trim();
 
-        Optional<Student> existingStudent =
-                repo.findByNameIgnoreCase(cleanName);
+        Optional<Student> existingStudent = repo.findByNameIgnoreCase(cleanName);
 
         if (existingStudent.isPresent()) {
             Student existing = existingStudent.get();
-            return new StudentResponse(existing.getId(), existing.getName());
+            return new StudentResponse(
+                    existing.getId(),
+                    existing.getName(),
+                    existing.getCourse().getId(),
+                    existing.getCourse().getName()
+            );
         }
 
-        Student student = new Student(cleanName);
+        //  Fetch course from DB
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        //  Attach course to student
+        Student student = new Student(cleanName, course);
+
         Student savedStudent = repo.save(student);
 
-        return new StudentResponse(savedStudent.getId(), savedStudent.getName());
+        return new StudentResponse(
+                savedStudent.getId(),
+                savedStudent.getName(),
+                course.getId(),
+                course.getName()
+        );
     }
-
 
     public Page<StudentResponse> getAllStudents(Pageable pageable) {
         return repo.findAll(pageable)
                 .map(student -> new StudentResponse(
                         student.getId(),
-                        student.getName()
+                        student.getName(),
+                        student.getCourse().getId(),
+                        student.getCourse().getName()
                 ));
     }
 
     public StudentResponse getStudentById(Long id) {
         Student student = repo.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));;
+                .orElseThrow(() -> new StudentNotFoundException(id));
 
-        if (student == null) {
-            return null;
-        }
-
-        return new StudentResponse(student.getId(), student.getName());
+        return new StudentResponse(
+                student.getId(),
+                student.getName(),
+                student.getCourse().getId(),
+                student.getCourse().getName()
+        );
     }
 
     public void deleteStudent(Long id) {

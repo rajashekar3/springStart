@@ -20,6 +20,15 @@ public class StudentRequest {
     public String getName() {
         return name;
     }
+    private Long courseId;
+
+    public Long getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
+    }
 
     public void setName(String name) {
         this.name = name;
